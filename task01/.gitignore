@@ -1,0 +1,48 @@
+.syndicate
+logs/
+.syndicate-config-*/
+
+# Build output files
+target/
+build/
+
+# IDE-specific files
+.settings/
+*.iws
+*.iml
+*.ipr
+*.classpath
+*.project
+
+# Generated code
+src/main/generated-sources/
+src/test/generated-sources/
+
+# Dependency directories
+.m2/repository/
+
+
+# IDE configuration files
+*.log
+*.pid
+*.stackdump
+*.hprof
+
+# Temporary files
+*.swp
+*.bak
+*.tmp
+*.swx
+*~
+
+# VCS files
+.svn/
+.git/
+.hg/
+.cvs/
+.bzr/
+
+# Local configuration files
+.idea/
+.vscode/
+.DS_Store
