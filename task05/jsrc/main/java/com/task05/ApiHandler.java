@@ -10,6 +10,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
+import com.syndicate.deployment.annotations.environment.EnvironmentVariables;
 import com.syndicate.deployment.annotations.lambda.LambdaHandler;
 import com.syndicate.deployment.model.RetentionSetting;
 
@@ -22,10 +24,13 @@ import java.util.UUID;
         roleName = "api_handler-role",
         logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
+@EnvironmentVariables(value = {
+        @EnvironmentVariable(key = "DYNAMODB_TABLE_NAME", value = "${target_table}")
+})
 public class ApiHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
     private final AmazonDynamoDB dynamoDBClient = AmazonDynamoDBClientBuilder.defaultClient();
     private final DynamoDB dynamoDB = new DynamoDB(dynamoDBClient);
-    private final String tableName = "cmtr-be3b68d2-Events";
+    private final String tableName = System.getenv("DYNAMODB_TABLE_NAME"); //"cmtr-be3b68d2-Events";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, String> responseHeaders = Map.of("Content-Type", "application/json");
 
