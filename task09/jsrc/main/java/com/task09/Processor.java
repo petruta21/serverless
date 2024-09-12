@@ -9,6 +9,9 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.xray.AWSXRayClientBuilder;
+import com.amazonaws.services.xray.model.GetTraceSummariesRequest;
+import com.amazonaws.services.xray.model.GetTraceSummariesResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.syndicate.deployment.annotations.environment.EnvironmentVariable;
@@ -18,6 +21,8 @@ import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
 import com.syndicate.deployment.model.RetentionSetting;
 import com.syndicate.deployment.model.TracingMode;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,6 +45,7 @@ public class Processor implements RequestHandler<APIGatewayV2HTTPEvent, APIGatew
 
 
     public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent requestEvent, Context context) {
+        long startTime = Instant.now().getEpochSecond();
 
         String forecastString = OpenMeteoAPI.getWeatherForecast();
         if (forecastString != null) {
@@ -47,6 +53,10 @@ public class Processor implements RequestHandler<APIGatewayV2HTTPEvent, APIGatew
                 WeatherEntity weatherEntity = parseForecast(forecastString);
                 WeatherDynamoDBEntity dynamoDBEntity = convertToWeatherDynamoDBEntity(weatherEntity);
                 putToDynamoDB(dynamoDBEntity);
+
+                long endTime = Instant.now().getEpochSecond();
+                verifyTraces(context.getAwsRequestId(), startTime, endTime);
+
                 return createSuccessResponse("Weather forecast saved successfully!");
             } catch (Exception e) {
                 return createErrorResponse(500, "Failed to save forecast to DynamoDB.");
@@ -131,6 +141,23 @@ public class Processor implements RequestHandler<APIGatewayV2HTTPEvent, APIGatew
         return forecast;
     }
 
+    private void verifyTraces(String awsRequestId, long startTimeEpochSeconds, long endTimeEpochSeconds) {
+
+        Date startTime = new Date(startTimeEpochSeconds * 1000);
+        Date endTime = new Date(endTimeEpochSeconds * 1000);
+
+        GetTraceSummariesRequest request = new GetTraceSummariesRequest()
+                .withStartTime(startTime)
+                .withEndTime(endTime);
+
+        GetTraceSummariesResult result = AWSXRayClientBuilder.defaultClient().getTraceSummaries(request);
+
+        if (result.getTraceSummaries().isEmpty()) {
+            throw new RuntimeException("X-Ray traces not found after lambda function invocation");
+        } else {
+            System.out.println("X-Ray traces found: " + result.getTraceSummaries().size());
+        }
+    }
 }
 
 
