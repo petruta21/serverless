@@ -69,8 +69,6 @@ public class PostReservationHandler extends CognitoSupport implements RequestHan
     private void putToDynamoDB(ReservationDBEntity reservationDBEntity) {
         Table table = dynamoDB.getTable(tableName);
 
-
-
         Item item = new Item()
                 .withPrimaryKey("id", reservationDBEntity.getId())
                 .withInt("tableNumber", reservationDBEntity.getTableNumber())

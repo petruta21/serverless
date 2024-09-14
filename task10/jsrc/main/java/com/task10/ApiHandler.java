@@ -79,7 +79,7 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
   				new RouteKey("GET", "/tables"), new GetTablesHandler(),
 				new RouteKey("POST", "/tables"), new PostTablesHandler(cognitoClient),
             	new RouteKey("POST", "/reservations"), new PostReservationHandler(cognitoClient),
- 				new RouteKey("GET", "/reservations"), new GetReservationHandler()//TODO
+ 				new RouteKey("GET", "/reservations"), new GetReservationHandler()
 
 		);
 	}

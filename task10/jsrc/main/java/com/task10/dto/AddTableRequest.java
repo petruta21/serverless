@@ -26,7 +26,7 @@ public class AddTableRequest {
 
     }
 
-    public static AddTableRequest fromJson(String jsonString) {
+/*    public static AddTableRequest fromJson(String jsonString) {
         JSONObject json = new JSONObject(jsonString);
         Integer id = Integer.valueOf(json.optString("id", null));
         Integer number = Integer.valueOf(json.optString("number", null));
@@ -35,7 +35,7 @@ public class AddTableRequest {
         Integer minOrder = Integer.valueOf(json.optString("minOrder", null));
 
         return new AddTableRequest(id, number, places, isVip, minOrder);
-    }
+    }*/
 
     public int getId() {
         return id;
