@@ -5,8 +5,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GetTableResponseWithTableId {
-    private Table table;
+public class GetTablesResponse {
+    private List<Table> tables;
+
+    public List<Table> getTables() {
+        return tables;
+    }
+
+    public void setTables(List<Table> tables) {
+        this.tables = tables;
+    }
 
     public static class Table {
         private Integer id;
@@ -50,5 +58,24 @@ public class GetTableResponseWithTableId {
             return minOrder;
         }
 
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public void setNumber(Integer number) {
+            this.number = number;
+        }
+
+        public void setPlaces(Integer places) {
+            this.places = places;
+        }
+
+        public void setVip(boolean vip) {
+            isVip = vip;
+        }
+
+        public void setMinOrder(Integer minOrder) {
+            this.minOrder = minOrder;
+        }
     }
 }

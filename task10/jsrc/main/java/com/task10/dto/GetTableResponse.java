@@ -1,13 +1,18 @@
 package com.task10.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.json.JSONObject;
-
-import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetTableResponse {
-    private List<Table> tables;
+    private Table table;
+
+    public Table getTable() {
+        return table;
+    }
+
+    public void setTable(Table table) {
+        this.table = table;
+    }
 
     public static class Table {
         private Integer id;
@@ -17,6 +22,10 @@ public class GetTableResponse {
         private Integer minOrder;  //optional, table deposit required to book it
 
         public Table() {
+        }
+
+        public Table(Integer id) {
+            this.id = id;
         }
 
         public Table(Integer id, Integer number, Integer places, boolean isVip, Integer minOrder) {
@@ -51,5 +60,24 @@ public class GetTableResponse {
             return minOrder;
         }
 
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public void setNumber(Integer number) {
+            this.number = number;
+        }
+
+        public void setPlaces(Integer places) {
+            this.places = places;
+        }
+
+        public void setVip(boolean vip) {
+            isVip = vip;
+        }
+
+        public void setMinOrder(Integer minOrder) {
+            this.minOrder = minOrder;
+        }
     }
 }

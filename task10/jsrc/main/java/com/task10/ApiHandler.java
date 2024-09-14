@@ -61,7 +61,18 @@ public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, A
 	}
 
 	private RouteKey getRouteKey(APIGatewayProxyRequestEvent requestEvent) {
-		return new RouteKey(requestEvent.getHttpMethod(), requestEvent.getPath());
+		return new RouteKey(requestEvent.getHttpMethod(), cleanupPath(requestEvent.getPath()));
+	}
+
+	private String cleanupPath(String path) {
+		if (path == null || path.isEmpty()) {
+			return path;
+		}
+		//  /tables/666  -> /tables
+		if (path.substring(1).contains("/")) {
+			return path.substring(0, path.lastIndexOf("/"));
+		}
+		return path;
 	}
 
 	private CognitoIdentityProviderClient initCognitoClient() {
