@@ -1,10 +1,13 @@
 package com.task09;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+
 public class WeatherEntity {
     private int elevation;
     private int generationtime_ms;
