@@ -6,7 +6,7 @@ import com.task10.dto.GetTablesResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DynamoDBHelper {
+public class DynamoDBHelperTables {
 
     public static List<GetTablesResponse.Table> getFromDynamoDB(DynamoDB dynamoDB, String tableName) {
         List<GetTablesResponse.Table> tableList = new ArrayList<>();

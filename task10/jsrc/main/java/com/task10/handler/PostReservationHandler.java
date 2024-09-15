@@ -8,9 +8,14 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.task10.dto.*;
-import com.task10.handler.util.DynamoDBHelper;
+import com.task10.handler.util.DynamoDBHelperReservation;
+import com.task10.handler.util.DynamoDBHelperTables;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 public class PostReservationHandler extends CognitoSupport implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -44,13 +49,13 @@ public class PostReservationHandler extends CognitoSupport implements RequestHan
 
             ReservationDBEntity reservationDBEntity = convertToReservationDBEntity(addReservationRequest);
 
-          /*  if (isConflictingReservation(reservationDBEntity)) {
+            if (isConflictingReservation(reservationDBEntity.getTableNumber(), reservationDBEntity.getDate(), reservationDBEntity.getSlotTimeStart(), reservationDBEntity.getSlotTimeEnd())) {
                 return new APIGatewayProxyResponseEvent()
                         .withStatusCode(400)
                         .withBody("{\"message\": \"This table is already reserved.\"}");
-            }*/
+            }
 
-          if(!isTableExist(reservationDBEntity.getTableNumber())){
+            if (!isTableExist(reservationDBEntity.getTableNumber())) {
                 return new APIGatewayProxyResponseEvent()
                         .withStatusCode(400)
                         .withBody("{\"message\": \"This table does not exist.\"}");
@@ -115,11 +120,49 @@ public class PostReservationHandler extends CognitoSupport implements RequestHan
                 : null;
     }
 
-    private boolean isTableExist(int tableNumber)
-    {
-        return DynamoDBHelper.getFromDynamoDB(dynamoDB, tableNameTables)
+    private boolean isTableExist(int tableNumber) {
+        return DynamoDBHelperTables.getFromDynamoDB(dynamoDB, tableNameTables)
                 .stream()
                 .anyMatch(existingTable -> existingTable.getNumber() == tableNumber);
     }
 
+    private boolean isConflictingReservation(int tableNumber, String date, String slotTimeStart, String slotTimeEnd) {
+        LocalDate currentDate = LocalDate.now();
+        LocalTime currentTime = LocalTime.now();
+
+        LocalDate requestedDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalTime requestedTimeSlotStart = LocalTime.parse(slotTimeStart, DateTimeFormatter.ofPattern("HH:mm"));
+        LocalTime requestedTimeSlotEnd = LocalTime.parse(slotTimeEnd, DateTimeFormatter.ofPattern("HH:mm"));
+
+        List<GetReservationResponse.Reservations> reservations = DynamoDBHelperReservation.getFromDynamoDB(dynamoDB, tableName);
+
+
+        return reservations.stream()
+                .filter(currentReservation -> currentReservation.getTableNumber() == tableNumber)
+                .filter(currentReservation -> isFutureReservation(currentReservation, currentDate, currentTime))
+                .anyMatch(currentReservation -> isTimeConflicting(currentReservation, requestedDate, requestedTimeSlotStart, requestedTimeSlotEnd));
+    }
+
+    private boolean isFutureReservation(GetReservationResponse.Reservations reservation, LocalDate currentDate, LocalTime currentTime) {
+        LocalDate reservationDate = LocalDate.parse(reservation.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        if (reservationDate.isAfter(currentDate)) {
+            return true;
+        } else if (reservationDate.isEqual(currentDate)) {
+            LocalTime reservationSlotStart = LocalTime.parse(reservation.getSlotTimeStart(), DateTimeFormatter.ofPattern("HH:mm"));
+            return reservationSlotStart.isAfter(currentTime);
+        }
+        return false;
+    }
+
+    private boolean isTimeConflicting(GetReservationResponse.Reservations reservation, LocalDate requestedDate, LocalTime requestedSlotStart, LocalTime requestedSlotEnd) {
+        LocalDate reservationDate = LocalDate.parse(reservation.getDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalTime reservationSlotStart = LocalTime.parse(reservation.getSlotTimeStart(), DateTimeFormatter.ofPattern("HH:mm"));
+        LocalTime reservationSlotEnd = LocalTime.parse(reservation.getSlotTimeEnd(), DateTimeFormatter.ofPattern("HH:mm"));
+
+        if (reservationDate.isEqual(requestedDate)) {
+            return (requestedSlotStart.isBefore(reservationSlotEnd) && requestedSlotEnd.isAfter(reservationSlotStart));
+        }
+        return false;
+    }
 }

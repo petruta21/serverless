@@ -10,7 +10,7 @@ public class SignIn {
     private String password;
 
 
-    public SignIn (String nickName, String password) {
+    public SignIn(String nickName, String password) {
         if (nickName == null || password == null) {
             throw new IllegalArgumentException("Missing or incomplete data.");
         }

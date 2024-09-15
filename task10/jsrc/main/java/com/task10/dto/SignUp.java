@@ -10,7 +10,7 @@ public class SignUp {
     private String firstName;
     private String lastName;
 
-    public SignUp (String email, String password, String firstName, String lastName) {
+    public SignUp(String email, String password, String firstName, String lastName) {
         if (email == null || password == null || firstName == null || lastName == null) {
             throw new IllegalArgumentException("Missing or incomplete data.");
         }

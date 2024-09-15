@@ -8,8 +8,8 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.task10.dto.GetReservationResponse;
+import com.task10.handler.util.DynamoDBHelperReservation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GetReservationHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -24,7 +24,7 @@ public class GetReservationHandler implements RequestHandler<APIGatewayProxyRequ
 
         try {
 
-            List<GetReservationResponse.Reservations> reservations = getFromDynamoDB();
+            List<GetReservationResponse.Reservations> reservations = DynamoDBHelperReservation.getFromDynamoDB(dynamoDB, tableName);
 
             GetReservationResponse response = new GetReservationResponse();
             response.setReservations(reservations);
@@ -39,36 +39,4 @@ public class GetReservationHandler implements RequestHandler<APIGatewayProxyRequ
                     .withStatusCode(500);
         }
     }
-
-    private List<GetReservationResponse.Reservations> getFromDynamoDB() {
-        List<GetReservationResponse.Reservations> reservations = new ArrayList<>();
-        Table table = dynamoDB.getTable(tableName);
-
-        try {
-            ItemCollection<ScanOutcome> items = table.scan();
-            for (Item item : items) {
-                GetReservationResponse.Reservations reservation = convertFromReservationDBEntity(item);
-                reservations.add(reservation);
-            }
-        } catch (Exception e) {
-            System.err.println("Unable to scan the table:");
-            e.printStackTrace();
-        }
-
-        return reservations;
-
-    }
-
-    private GetReservationResponse.Reservations convertFromReservationDBEntity(Item item) {
-        GetReservationResponse.Reservations result = new GetReservationResponse.Reservations();
-
-        result.setTableNumber(item.getInt("tableNumber"));
-        result.setClientName(item.getString("clientName"));
-        result.setPhoneNumber(item.getString("phoneNumber"));
-        result.setDate(item.getString("date"));
-        result.setSlotTimeStart(item.getString("slotTimeStart"));
-        result.setSlotTimeEnd(item.getString("slotTimeEnd"));
-        return result;
-    }
-
 }

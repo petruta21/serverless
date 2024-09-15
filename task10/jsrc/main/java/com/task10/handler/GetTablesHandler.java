@@ -12,7 +12,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.task10.dto.GetTableResponse;
 import com.task10.dto.GetTablesResponse;
-import com.task10.handler.util.DynamoDBHelper;
+import com.task10.handler.util.DynamoDBHelperTables;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEv
             String tableId = requestEvent.getPathParameters() != null ? requestEvent.getPathParameters().get("tableId") : null;
 
             if (tableId == null || tableId.isEmpty()) {
-                List<GetTablesResponse.Table> tables = DynamoDBHelper.getFromDynamoDB(dynamoDB, tableName);
+                List<GetTablesResponse.Table> tables = DynamoDBHelperTables.getFromDynamoDB(dynamoDB, tableName);
 
                 GetTablesResponse response = new GetTablesResponse();
                 response.setTables(tables);
@@ -70,7 +70,4 @@ public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEv
         result.setMinOrder(item.getInt("minOrder"));
         return result;
     }
-
-
-
 }

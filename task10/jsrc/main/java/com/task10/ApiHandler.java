@@ -22,85 +22,84 @@ import static com.syndicate.deployment.model.environment.ValueTransformer.USER_P
 import static com.syndicate.deployment.model.environment.ValueTransformer.USER_POOL_NAME_TO_USER_POOL_ID;
 
 @LambdaHandler(
-    lambdaName = "api_handler",
-	roleName = "api_handler-role",
-	logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
+        lambdaName = "api_handler",
+        roleName = "api_handler-role",
+        logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
 @DependsOn(resourceType = ResourceType.COGNITO_USER_POOL, name = "${booking_userpool}")
 @EnvironmentVariables(value = {
-		@EnvironmentVariable(key = "REGION", value = "${region}"),
-		@EnvironmentVariable(key = "TABLES_TABLE_NAME", value = "${tables_table}"),
-		@EnvironmentVariable(key = "RESERVATIONS_TABLE_NAME", value = "${reservations_table}"),
-		@EnvironmentVariable(key = "BOOKING_USERPOOL", value = "${booking_userpool}"),
-		@EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
-		@EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)
+        @EnvironmentVariable(key = "REGION", value = "${region}"),
+        @EnvironmentVariable(key = "TABLES_TABLE_NAME", value = "${tables_table}"),
+        @EnvironmentVariable(key = "RESERVATIONS_TABLE_NAME", value = "${reservations_table}"),
+        @EnvironmentVariable(key = "BOOKING_USERPOOL", value = "${booking_userpool}"),
+        @EnvironmentVariable(key = "COGNITO_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_USER_POOL_ID),
+        @EnvironmentVariable(key = "CLIENT_ID", value = "${booking_userpool}", valueTransformer = USER_POOL_NAME_TO_CLIENT_ID)
 })
 public class ApiHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-	private final CognitoIdentityProviderClient cognitoClient;
-	private final Map<RouteKey, RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>> handlersByRouteKey;
-	private final Map<String, String> headersForCORS;
-	private final RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> routeNotImplementedHandler;
+    private final CognitoIdentityProviderClient cognitoClient;
+    private final Map<RouteKey, RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>> handlersByRouteKey;
+    private final Map<String, String> headersForCORS;
+    private final RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> routeNotImplementedHandler;
 
-	public ApiHandler() {
-		this.cognitoClient = initCognitoClient();
-		this.handlersByRouteKey = initHandlers();
-		this.headersForCORS = initHeadersForCORS();
-		this.routeNotImplementedHandler = new RouteNotImplementedHandler();
-	}
+    public ApiHandler() {
+        this.cognitoClient = initCognitoClient();
+        this.handlersByRouteKey = initHandlers();
+        this.headersForCORS = initHeadersForCORS();
+        this.routeNotImplementedHandler = new RouteNotImplementedHandler();
+    }
 
-	@Override
-	public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
-		return getHandler(requestEvent)
-				.handleRequest(requestEvent, context)
-				.withHeaders(headersForCORS);
-	}
+    @Override
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
+        return getHandler(requestEvent)
+                .handleRequest(requestEvent, context)
+                .withHeaders(headersForCORS);
+    }
 
-	private RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> getHandler(APIGatewayProxyRequestEvent requestEvent) {
-		return handlersByRouteKey.getOrDefault(getRouteKey(requestEvent), routeNotImplementedHandler);
-	}
+    private RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> getHandler(APIGatewayProxyRequestEvent requestEvent) {
+        return handlersByRouteKey.getOrDefault(getRouteKey(requestEvent), routeNotImplementedHandler);
+    }
 
-	private RouteKey getRouteKey(APIGatewayProxyRequestEvent requestEvent) {
-		return new RouteKey(requestEvent.getHttpMethod(), cleanupPath(requestEvent.getPath()));
-	}
+    private RouteKey getRouteKey(APIGatewayProxyRequestEvent requestEvent) {
+        return new RouteKey(requestEvent.getHttpMethod(), cleanupPath(requestEvent.getPath()));
+    }
 
-	private String cleanupPath(String path) {
-		if (path == null || path.isEmpty()) {
-			return path;
-		}
-		//  /tables/666  -> /tables
-		if (path.substring(1).contains("/")) {
-			return path.substring(0, path.lastIndexOf("/"));
-		}
-		return path;
-	}
+    private String cleanupPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+        if (path.substring(1).contains("/")) {
+            return path.substring(0, path.lastIndexOf("/"));
+        }
+        return path;
+    }
 
-	private CognitoIdentityProviderClient initCognitoClient() {
-		return CognitoIdentityProviderClient.builder()
-				.region(Region.of(System.getenv("REGION")))
-				.credentialsProvider(DefaultCredentialsProvider.create())
-				.build();
-	}
+    private CognitoIdentityProviderClient initCognitoClient() {
+        return CognitoIdentityProviderClient.builder()
+                .region(Region.of(System.getenv("REGION")))
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .build();
+    }
 
-	private Map<RouteKey, RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>> initHandlers() {
-		return Map.of(
-				new RouteKey("GET", "/"), new GetRootHandler(),
-				new RouteKey("POST", "/signup"), new PostSignUpHandler(cognitoClient),
-				new RouteKey("POST", "/signin"), new PostSignInHandler(cognitoClient),
-  				new RouteKey("GET", "/tables"), new GetTablesHandler(),
-				new RouteKey("POST", "/tables"), new PostTablesHandler(cognitoClient),
-            	new RouteKey("POST", "/reservations"), new PostReservationHandler(cognitoClient),
- 				new RouteKey("GET", "/reservations"), new GetReservationHandler()
+    private Map<RouteKey, RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent>> initHandlers() {
+        return Map.of(
+                new RouteKey("GET", "/"), new GetRootHandler(),
+                new RouteKey("POST", "/signup"), new PostSignUpHandler(cognitoClient),
+                new RouteKey("POST", "/signin"), new PostSignInHandler(cognitoClient),
+                new RouteKey("GET", "/tables"), new GetTablesHandler(),
+                new RouteKey("POST", "/tables"), new PostTablesHandler(cognitoClient),
+                new RouteKey("POST", "/reservations"), new PostReservationHandler(cognitoClient),
+                new RouteKey("GET", "/reservations"), new GetReservationHandler()
 
-		);
-	}
+        );
+    }
 
-	private Map<String, String> initHeadersForCORS() {
-		return Map.of(
-				"Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-				"Access-Control-Allow-Origin", "*",
-				"Access-Control-Allow-Methods", "*",
-				"Accept-Version", "*"
-		);
-	}
+    private Map<String, String> initHeadersForCORS() {
+        return Map.of(
+                "Access-Control-Allow-Headers", "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+                "Access-Control-Allow-Origin", "*",
+                "Access-Control-Allow-Methods", "*",
+                "Accept-Version", "*"
+        );
+    }
 }
