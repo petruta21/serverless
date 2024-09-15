@@ -14,6 +14,8 @@ public class SignIn {
         if (email == null || password == null) {
             throw new IllegalArgumentException("Missing or incomplete data.");
         }
+        this.email = email;
+        this.password = password;
     }
 
     public static SignIn fromJson(String jsonString) {

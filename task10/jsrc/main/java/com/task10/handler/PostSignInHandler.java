@@ -19,7 +19,6 @@ public class PostSignInHandler extends CognitoSupport implements RequestHandler<
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent requestEvent, Context context) {
         try {
             SignIn signIn = SignIn.fromJson(requestEvent.getBody());
-
             String accessToken = cognitoSignIn(signIn.getEmail(), signIn.getPassword())
                     .authenticationResult()
                     .idToken();
@@ -28,6 +27,7 @@ public class PostSignInHandler extends CognitoSupport implements RequestHandler<
                     .withStatusCode(200)
                     .withBody(new JSONObject().put("accessToken", accessToken).toString());
         } catch (Exception e) {
+            e.printStackTrace();
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(400)
                     .withBody(new JSONObject().put("error", e.getMessage()).toString());
