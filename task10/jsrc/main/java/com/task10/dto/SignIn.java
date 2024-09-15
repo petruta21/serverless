@@ -6,26 +6,26 @@ import java.util.Objects;
 
 public class SignIn {
 
-    private String nickName;
+    private String email;
     private String password;
 
 
-    public SignIn(String nickName, String password) {
-        if (nickName == null || password == null) {
+    public SignIn(String email, String password) {
+        if (email == null || password == null) {
             throw new IllegalArgumentException("Missing or incomplete data.");
         }
     }
 
     public static SignIn fromJson(String jsonString) {
         JSONObject json = new JSONObject(jsonString);
-        String nickName = json.optString("nickName", null);
+        String email = json.optString("email", null);
         String password = json.optString("password", null);
 
-        return new SignIn(nickName, password);
+        return new SignIn(email, password);
     }
 
-    public String getNickName() {
-        return nickName;
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {
@@ -37,11 +37,11 @@ public class SignIn {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SignIn signIn = (SignIn) o;
-        return Objects.equals(nickName, signIn.nickName) && Objects.equals(password, signIn.password);
+        return Objects.equals(email, signIn.email) && Objects.equals(password, signIn.password);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nickName, password);
+        return Objects.hash(email, password);
     }
 }

@@ -20,7 +20,7 @@ public class PostSignInHandler extends CognitoSupport implements RequestHandler<
         try {
             SignIn signIn = SignIn.fromJson(requestEvent.getBody());
 
-            String accessToken = cognitoSignIn(signIn.getNickName(), signIn.getPassword())
+            String accessToken = cognitoSignIn(signIn.getEmail(), signIn.getPassword())
                     .authenticationResult()
                     .idToken();
 
