@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.task10.dto.GetTableResponse;
 import com.task10.dto.GetTablesResponse;
 import com.task10.handler.util.DynamoDBHelperTables;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -38,9 +39,13 @@ public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEv
                         .withStatusCode(200)
                         .withBody(objectMapper.writeValueAsString(response));
             } else {
-                GetTableResponse.Table tableResult = getFromDynamoDBWithTableId(tableId);
-                GetTableResponse response = new GetTableResponse();
-                response.setTable(tableResult);
+                Item existingTable = getFromDynamoDBWithTableId(tableId);
+                if (existingTable == null) {
+                    return new APIGatewayProxyResponseEvent()
+                            .withStatusCode(400)
+                            .withBody(new JSONObject().put("error", "table not found").toString());
+                }
+                GetTableResponse response = convertFromTableDBEntityWithTableId(existingTable);
 
                 return new APIGatewayProxyResponseEvent()
                         .withStatusCode(200)
@@ -54,15 +59,14 @@ public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEv
         }
     }
 
-    private GetTableResponse.Table getFromDynamoDBWithTableId(String tableId) {
+    private Item getFromDynamoDBWithTableId(String tableId) {
         Table table = dynamoDB.getTable(tableName);
         PrimaryKey primaryKey = new PrimaryKey("id", tableId);
-        Item item = table.getItem(primaryKey);
-        return convertFromTableDBEntityWithTableId(item);
+        return table.getItem(primaryKey);
     }
 
-    private GetTableResponse.Table convertFromTableDBEntityWithTableId(Item item) {
-        GetTableResponse.Table result = new GetTableResponse.Table();
+    private GetTableResponse convertFromTableDBEntityWithTableId(Item item) {
+        GetTableResponse result = new GetTableResponse();
         result.setId(item.getInt("id"));
         result.setNumber(item.getInt("number"));
         result.setPlaces(item.getInt("places"));
