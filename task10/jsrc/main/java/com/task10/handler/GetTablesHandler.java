@@ -1,16 +1,19 @@
 package com.task10.handler;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.PrimaryKey;
+import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.task10.dto.GetTablesResponse;
 import com.task10.dto.GetTableResponse;
+import com.task10.dto.GetTablesResponse;
+import com.task10.handler.util.DynamoDBHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -26,7 +29,7 @@ public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEv
             String tableId = requestEvent.getPathParameters() != null ? requestEvent.getPathParameters().get("tableId") : null;
 
             if (tableId == null || tableId.isEmpty()) {
-                List<GetTablesResponse.Table> tables = getFromDynamoDB();
+                List<GetTablesResponse.Table> tables = DynamoDBHelper.getFromDynamoDB(dynamoDB, tableName);
 
                 GetTablesResponse response = new GetTablesResponse();
                 response.setTables(tables);
@@ -51,25 +54,6 @@ public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEv
         }
     }
 
-    private List<GetTablesResponse.Table> getFromDynamoDB() {
-        List<GetTablesResponse.Table> tableList = new ArrayList<>();
-        Table table = dynamoDB.getTable(tableName);
-
-        try {
-            ItemCollection<ScanOutcome> items = table.scan();
-            for (Item item : items) {
-                GetTablesResponse.Table tableRes = convertFromTableDBEntity(item);
-                tableList.add(tableRes);
-            }
-        } catch (Exception e) {
-            System.err.println("Unable to scan the table:");
-            e.printStackTrace();
-        }
-
-        return tableList;
-
-    }
-
     private GetTableResponse.Table getFromDynamoDBWithTableId(String tableId) {
         Table table = dynamoDB.getTable(tableName);
         PrimaryKey primaryKey = new PrimaryKey("id", tableId);
@@ -87,15 +71,6 @@ public class GetTablesHandler implements RequestHandler<APIGatewayProxyRequestEv
         return result;
     }
 
-    private GetTablesResponse.Table convertFromTableDBEntity(Item item) {
-        GetTablesResponse.Table result = new GetTablesResponse.Table();
 
-        result.setId(item.getInt("id"));
-        result.setNumber(item.getInt("number"));
-        result.setPlaces(item.getInt("places"));
-        result.setVip(item.getBoolean("isVip"));
-        result.setMinOrder(item.getInt("minOrder"));
-        return result;
-    }
 
 }

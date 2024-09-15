@@ -1,7 +1,6 @@
 package com.task10.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.json.JSONObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TablesDBEntity {
@@ -19,17 +18,6 @@ public class TablesDBEntity {
             throw new IllegalArgumentException("Missing or incomplete data.");
         }
     }
-
-//    public static TablesDBEntity fromJson(String jsonString) {
-//        JSONObject json = new JSONObject(jsonString);
-//        Integer id = Integer.valueOf(json.optString("id", null));
-//        Integer number = Integer.valueOf(json.optString("number", null));
-//        Integer places = Integer.valueOf(json.optString("places", null));
-//        boolean isVip = Boolean.parseBoolean(json.optString("isVip", null));
-//        Integer minOrder = Integer.valueOf(json.optString("minOrder", null));
-//
-//        return new TablesDBEntity(id, number, places, isVip, minOrder);
-//    }
 
     public int getId() {
         return id;

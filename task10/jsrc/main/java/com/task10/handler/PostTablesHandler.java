@@ -28,12 +28,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.task10.dto.AddTableRequest;
 import com.task10.dto.AddTableResponse;
 import com.task10.dto.TablesDBEntity;
+import com.task10.handler.util.DynamoDBHelper;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 
 public class PostTablesHandler extends CognitoSupport implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     final ObjectMapper objectMapper = new ObjectMapper();
-
 
     public PostTablesHandler(CognitoIdentityProviderClient cognitoClient) {
         super(cognitoClient);
@@ -49,7 +49,23 @@ public class PostTablesHandler extends CognitoSupport implements RequestHandler<
         String requestBody = requestEvent.getBody();
         try {
             AddTableRequest addTableRequest = objectMapper.readValue(requestBody, AddTableRequest.class);
+            String validationError = validateRequest(addTableRequest);
+
+            if (validationError != null) {
+                return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(400)
+                        .withBody("{\"message\": \"Bad Request: " + validationError + "\"}");
+            }
+
             TablesDBEntity tablesDBEntity = convertToTablesDBEntity(addTableRequest);
+
+            if (isTableExist(tablesDBEntity.getNumber())) {
+                return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(400)
+                        .withBody("{\"message\": \"This table already exists.\"}");
+            }
+
+
             putToDynamoDB(tablesDBEntity);
 
             AddTableResponse response = new AddTableResponse();
@@ -94,4 +110,19 @@ public class PostTablesHandler extends CognitoSupport implements RequestHandler<
         System.out.println("Table saved with outcome: " + outcome);
     }
 
+    private String validateRequest(AddTableRequest request) {
+        if (request.getNumber() < 0) {
+            return "Table number must be greater than 0.";
+        }
+        if (request.getPlaces() < 0) {
+            return "Table places must be greater than 0.";
+        }
+        return null;
+    }
+
+    private boolean isTableExist(int tableNumber) {
+        return DynamoDBHelper.getFromDynamoDB(dynamoDB, tableName)
+                .stream()
+                .anyMatch(existingTable -> existingTable.getNumber() == tableNumber);
+    }
 }
