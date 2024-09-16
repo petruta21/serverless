@@ -84,6 +84,16 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad Request. There was an error in the request.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -110,12 +120,6 @@
     "/tables": {
       "get": {
         "summary": "Retrieve a list of tables",
-        "requestBody": {
-          "required": false,
-          "content": {
-
-          }
-        },        
         "responses": {
           "200": {
             "description": "The request has succeeded. The server has processed the request and returned a list of tables.",
@@ -166,9 +170,20 @@
         }
       },
       "post": {
+        "summary": "Create a new table",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TableRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "The request has succeeded. A new table has been created.",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -179,7 +194,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Empty"
+                  "$ref": "#/components/schemas/TableResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. There was an error in the request.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -238,6 +263,7 @@
     },
     "/tables/{tableId}": {
       "get": {
+        "summary": "Retrieve information about a specific table",
         "parameters": [
           {
             "name": "tableId",
@@ -245,7 +271,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "The ID of the table to retrieve"
           }
         ],
         "responses": {
@@ -261,7 +288,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Empty"
+                  "$ref": "#/components/schemas/TableId"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. There was an error in the request.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -409,6 +446,57 @@
         "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
         "example": "15:00"
       },
+      "TableRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the table",
+            "example": 1
+          },
+          "number": {
+            "type": "integer",
+            "description": "Number of the table",
+            "example": 5
+          },
+          "places": {
+            "type": "integer",
+            "description": "Number of people the table can accommodate",
+            "example": 4
+          },
+          "isVip": {
+            "type": "boolean",
+            "description": "Indicates if the table is in the VIP hall",
+            "example": true
+          },
+          "minOrder": {
+            "type": "integer",
+            "description": "Optional: Minimum order or deposit required to book the table",
+            "example": 100,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "places",
+          "isVip"
+        ]
+      },
+
+      "TableResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "ID of the newly created table",
+            "example": 1
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
   "SigninRequest": {
     "type": "object",
     "properties": {
@@ -430,6 +518,43 @@
       "password"
     ]
   },
+      "TableId": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the table",
+            "example": 1
+          },
+          "number": {
+            "type": "integer",
+            "description": "Number of the table",
+            "example": 5
+          },
+          "places": {
+            "type": "integer",
+            "description": "Number of people the table can accommodate",
+            "example": 4
+          },
+          "isVip": {
+            "type": "boolean",
+            "description": "Indicates if the table is in the VIP hall",
+            "example": true
+          },
+          "minOrder": {
+            "type": "integer",
+            "description": "Optional: Minimum order or deposit required to book the table",
+            "example": 100,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "places",
+          "isVip"
+        ]
+      },
       "TablesResponse": {
         "type": "object",
         "properties": {
