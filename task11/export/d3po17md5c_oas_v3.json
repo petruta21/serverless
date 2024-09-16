@@ -109,9 +109,16 @@
     },
     "/tables": {
       "get": {
+        "summary": "Retrieve a list of tables",
+        "requestBody": {
+          "required": false,
+          "content": {
+
+          }
+        },        
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "The request has succeeded. The server has processed the request and returned a list of tables.",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -122,7 +129,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Empty"
+                  "$ref": "#/components/schemas/TablesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. There was an error in the request.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -413,6 +430,57 @@
       "password"
     ]
   },
+      "TablesResponse": {
+        "type": "object",
+        "properties": {
+          "tables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Table"
+            }
+          }
+        },
+        "required": [
+          "tables"
+        ]
+      },
+      "Table": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the table",
+            "example": 1
+          },
+          "number": {
+            "type": "integer",
+            "description": "Number of the table",
+            "example": 5
+          },
+          "places": {
+            "type": "integer",
+            "description": "Number of people the table can accommodate",
+            "example": 4
+          },
+          "isVip": {
+            "type": "boolean",
+            "description": "Indicates if the table is in the VIP hall",
+            "example": true
+          },
+          "minOrder": {
+            "type": "integer",
+            "description": "Optional: Minimum order or deposit required to book the table",
+            "example": 100,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "places",
+          "isVip"
+        ]
+      },
   "SigninResponse": {
     "type": "object",
     "properties": {
