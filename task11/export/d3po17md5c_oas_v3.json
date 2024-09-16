@@ -354,6 +354,13 @@
         "responses": {
           "200": {
             "description": "The request has succeeded. The server has processed the sign-in request, and the provided credentials were valid.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
