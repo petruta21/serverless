@@ -363,7 +363,14 @@
             }
           },
           "400": {
-            "description": "Bad Request. There was an error in the request."
+            "description": "Bad Request. There was an error in the request.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         },
         "x-amazon-apigateway-integration": {
