@@ -17,9 +17,10 @@
   "paths": {
     "/reservations": {
       "get": {
+        "summary": "Retrieve a list of reservations",
         "responses": {
           "200": {
-            "description": "200 response",
+            "description": "The request has succeeded. The server has provided a list of reservations.",
             "headers": {
               "Access-Control-Allow-Origin": {
                 "schema": {
@@ -30,7 +31,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Empty"
+                  "$ref": "#/components/schemas/ReservationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. There was an error in the request.",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
@@ -80,7 +91,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Empty"
+                  "$ref": "#/components/schemas/ReservationResponse"
                 }
               }
             }
@@ -483,7 +494,78 @@
           "isVip"
         ]
       },
-
+      "ReservationsResponse": {
+        "type": "object",
+        "properties": {
+          "reservations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reservation"
+            }
+          }
+        },
+        "required": [
+          "reservations"
+        ]
+      },
+      "Reservation": {
+        "type": "object",
+        "properties": {
+          "tableNumber": {
+            "type": "integer",
+            "description": "Number of the reserved table",
+            "example": 5
+          },
+          "clientName": {
+            "type": "string",
+            "description": "Name of the client who made the reservation",
+            "example": "John Doe"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number of the client",
+            "example": "+1234567890"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of the reservation in yyyy-MM-dd format",
+            "example": "2024-09-15"
+          },
+          "slotTimeStart": {
+            "type": "string",
+            "description": "Start time of the reservation slot in HH:MM format",
+            "example": "13:00"
+          },
+          "slotTimeEnd": {
+            "type": "string",
+            "description": "End time of the reservation slot in HH:MM format",
+            "example": "15:00"
+          }
+        },
+        "required": [
+          "tableNumber",
+          "clientName",
+          "phoneNumber",
+          "date",
+          "slotTimeStart",
+          "slotTimeEnd"
+        ]
+      },
+      "ReservationResponse": {
+        "type": "object",
+        "properties": {
+          "reservationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the reservation",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "reservationId"
+        ]
+      },
       "TableResponse": {
         "type": "object",
         "properties": {
